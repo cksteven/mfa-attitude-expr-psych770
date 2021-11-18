@@ -202,10 +202,16 @@
 
         return `<p>You responded correctly on ${accuracy}% of the trials.</p>
       <p>Your average response time was ${rt}ms.</p>
+      <p> A reminder that your condition is <b>${
+        rand_choice == 1 ? "scored" : "fixed"
+      }</b>.</p>
+      <p> You spent ${global_time / 1000} seconds on Duo. </p>
       <p> Please leave this page open. </p>
       <p>Please continue by filling out <a href="https://uwmadison.co1.qualtrics.com/jfe/form/SV_brURPgfNehTTqgS" target="_blank">this survey</a>. Thank you! You will be rewarded upon completing the survey.</p>`;
       },
     };
+
+    var global_time = -1;
 
     var enter_password = {
       type: jsPsychSurveyText,
@@ -246,6 +252,7 @@
         console.log(global_correct);
         if (global_correct) {
           data.correct = true;
+          global_time = Date.now() - global_time;
         } else {
           data.correct = false;
         }
@@ -254,6 +261,11 @@
 
     var loop_node = {
       timeline: [enter_password, feedback],
+      on_start: function () {
+        if (global_time == -1) {
+          global_time = Date.now();
+        }
+      },
       loop_function: function (data) {
         console.log(jsPsych.data.get().last(1).values()[0].correct == false);
         return jsPsych.data.get().last(1).values()[0].correct == false;
