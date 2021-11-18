@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>My experiment: MFA attitude</title>
+    <title>My experiment for</title>
     <script src="jspsych/jspsych.js"></script>
     <script src="jspsych/plugin-html-keyboard-response.js"></script>
     <script src="jspsych/plugin-image-keyboard-response.js"></script>
+    <script src="jspsych/plugin-survey-text.js"></script>
     <script src="jspsych/plugin-preload.js"></script>
     <link href="jspsych/jspsych.css" rel="stylesheet" type="text/css" />
   </head>
@@ -34,10 +35,94 @@
 
     var welcome = {
       type: jsPsychHtmlKeyboardResponse,
-      stimulus: "Welcome to the experiment. Press any key to begin.",
+      stimulus: `
+      <p>
+        Welcome to my little experiment for CS/Psych 770: Human Computer Interaction.
+<br />
+        <b> It will only take about 5 minutes to complete. </b>
+<br />
+        You would need to have a valid wisc email address to participate.
+<br />
+        <b>Please log out any UW-Madison webpages, or enter the Incognito mode of your browser.</b>
+<br />
+        There will be no risks to you and no personal information will be collected.
+<br />
+        Please contact Kesong Cao (kesong.cao@wisc.edu) for questions.
+      </p>
+      <p>
+        Press any key to begin.
+      </p>`,
     };
 
     timeline.push(welcome);
+
+    var condition = {
+      type: jsPsychHtmlKeyboardResponse,
+      stimulus: `
+        <p>
+          You will be randomly assigned to one of the following two conditions:
+          <br />
+          1. You will be rewarded based on the time you spend (the quicker the better) and score you earn (the more the better) during the experiment.
+          <br />
+          2. You will be rewarded a fixed amount regardless of the time and score you earn.
+        </p>
+
+        <p>
+          The experiment will be in two parts with an intermission where you would perform a different task.
+        </p>
+        <p>
+        Press any key to continue.
+      </p>
+        `,
+    };
+
+    timeline.push(condition);
+
+    var instructions_scored = {
+      type: jsPsychHtmlKeyboardResponse,
+      stimulus: `
+    <p>You are assigned to the <b>"scored"</b> condition, so you would
+        want to complete the experiment as fast as you can while still responding correctly. </p>
+
+    <p>In this experiment, a circle will appear in the center
+    of the screen.</p><p>If the circle is <strong>blue</strong>,
+    press the letter <b>F</b> on the keyboard as fast as you can.</p>
+    <p>If the circle is <strong>orange</strong>, press the letter <b>J</b>
+    as fast as you can.</p>
+    <div style='width: 700px;'>
+    <div style='float: left;'><img src='img/blue.png'></img>
+    <p class='small'><strong>Press the F key</strong></p></div>
+    <div style='float: right;'><img src='img/orange.png'></img>
+    <p class='small'><strong>Press the J key</strong></p></div>
+    </div>
+    <p>Press any key to begin.</p>
+  `,
+      post_trial_gap: 1000,
+    };
+
+    var instructions_fixed = {
+      type: jsPsychHtmlKeyboardResponse,
+      stimulus: `
+    <p>You are assigned to the <b>"fixed"</b> condition, so it doesn't matter how quick or how correct your responses are. </p>
+
+    <p>In this experiment, a circle will appear in the center
+    of the screen.</p><p>If the circle is <strong>blue</strong>,
+    press the letter F on the keyboard as fast as you can.</p>
+    <p>If the circle is <strong>orange</strong>, press the letter J
+    as fast as you can.</p>
+    <div style='width: 700px;'>
+    <div style='float: left;'><img src='img/blue.png'></img>
+    <p class='small'><strong>Press the F key</strong></p></div>
+    <div style='float: right;'><img src='img/orange.png'></img>
+    <p class='small'><strong>Press the J key</strong></p></div>
+    </div>
+    <p>Press any key to begin.</p>
+  `,
+      post_trial_gap: 1000,
+    };
+
+    // timeline = [];
+    // timeline.push(instructions_scored);
 
     var instructions = {
       type: jsPsychHtmlKeyboardResponse,
@@ -58,22 +143,6 @@
       post_trial_gap: 2000,
     };
 
-    timeline.push(instructions);
-
-    // var blue_trial = {
-    //   type: jsPsychImageKeyboardResponse,
-    //   stimulus: "img/blue.png",
-    //   choices: ["f", "j"],
-    // };
-
-    // var orange_trial = {
-    //   type: jsPsychImageKeyboardResponse,
-    //   stimulus: "img/orange.png",
-    //   choices: ["f", "j"],
-    // };
-
-    // timeline.push(blue_trial, orange_trial);
-
     var test_stimuli = [
       { stimulus: "img/blue.png", correct_response: "f" },
       { stimulus: "img/orange.png", correct_response: "j" },
@@ -85,7 +154,8 @@
       choices: "NO_KEYS",
       trial_duration: function () {
         return jsPsych.randomization.sampleWithoutReplacement(
-          [250, 500, 750, 1000, 1250, 1500, 1750, 2000],
+          //   [250, 500, 750, 1000, 1250, 1500, 1750, 2000],
+          [250],
           1
         )[0];
       },
@@ -114,13 +184,14 @@
       timeline: [fixation, test],
       timeline_variables: test_stimuli,
       randomize_order: true,
-      repetitions: 3,
+      repetitions: 15,
     };
 
-    timeline.push(test_procedure);
+    // timeline.push(test_procedure);
 
     var debrief_block = {
       type: jsPsychHtmlKeyboardResponse,
+      choices: ["~"],
       stimulus: function () {
         var trials = jsPsych.data.get().filter({ task: "response" });
         var correct_trials = trials.filter({ correct: true });
@@ -131,14 +202,104 @@
 
         return `<p>You responded correctly on ${accuracy}% of the trials.</p>
       <p>Your average response time was ${rt}ms.</p>
-      <p>Press any key to complete the experiment. Thank you!</p>`;
+      <p> Please leave this page open. </p>
+      <p>Please continue by filling out <a href="https://uwmadison.co1.qualtrics.com/jfe/form/SV_brURPgfNehTTqgS" target="_blank">this survey</a>. Thank you! You will be rewarded upon completing the survey.</p>`;
       },
     };
 
-    timeline.push(debrief_block);
+    var enter_password = {
+      type: jsPsychSurveyText,
+      preamble: `<p>Intermission</p> <p><b>If you haven't logged out your UW-Madison webpages, please open another browser window using the Incognito mode.</b></p> <p>Please open <a target="_blank" href="https://my.wisc.edu">my.wisc.edu</a> in another tab of your browser. <br />Scroll down to the bottom of that page and paste the bottom line in the below textbox.</p>`,
+      questions: [
+        {
+          prompt:
+            "The bottom line is: (something that looks like 'XX.YY.ZZ - AA-BB - CC')",
+        },
+      ],
+      on_finish: function (data) {
+        console.log(data.response);
+        if (data.response["Q0"].trim().startsWith("4.2")) {
+          data.correct = true;
+        } else {
+          data.correct = false;
+        }
+      },
+    };
+    var global_correct = false;
+    var feedback = {
+      type: jsPsychHtmlKeyboardResponse,
+      stimulus: function () {
+        // The feedback stimulus is a dynamic parameter because we can't know in advance whether
+        // the stimulus should be 'correct' or 'incorrect'.
+        // Instead, this function will check the accuracy of the last response and use that information to set
+        // the stimulus value on each trial.
+        var last_trial_correct = jsPsych.data.get().last(1).values()[0].correct;
+        if (last_trial_correct) {
+          global_correct = true;
+          return "<p>Correct!</p> <p>Press any key to continue.</p>"; // the parameter value has to be returned from the function
+        } else {
+          global_correct = false;
+          return "<p>Wrong. You would need to answer the question correctly to continue.</p> <p>Press any key to try again.</p>"; // the parameter value has to be returned from the function
+        }
+      },
+      on_finish: function (data) {
+        console.log(global_correct);
+        if (global_correct) {
+          data.correct = true;
+        } else {
+          data.correct = false;
+        }
+      },
+    };
+
+    var loop_node = {
+      timeline: [enter_password, feedback],
+      loop_function: function (data) {
+        console.log(jsPsych.data.get().last(1).values()[0].correct == false);
+        return jsPsych.data.get().last(1).values()[0].correct == false;
+      },
+    };
+
+    // timeline = [];
+    // // timeline.push(enter_password);
+    // // timeline.push(feedback);
+    // timeline.push(loop_node);
+
+    var scored_node = {
+      timeline: [
+        instructions_scored,
+        test_procedure,
+        loop_node,
+        test_procedure,
+        debrief_block,
+      ],
+    };
+
+    var fixed_node = {
+      timeline: [
+        instructions_fixed,
+        test_procedure,
+        loop_node,
+        test_procedure,
+        debrief_block,
+      ],
+    };
+
+    var rand_choice = jsPsych.randomization.sampleWithoutReplacement(
+      [0, 1],
+      1
+    )[0];
+
+    timeline.push(rand_choice == 1 ? scored_node : fixed_node);
+    // timeline.push(debrief_block);
 
     // I want to send the user an email to their wisc address
     // so that they have to use MFA (Duo)
+
+    // send email is too complicated, so I'll ask them to login to
+    // my.wisc.edu and paste something from there
+
+    var answer = "4.2.1.37 - prod1-1752 - zs5b6q33";
 
     jsPsych.run(timeline);
   </script>
